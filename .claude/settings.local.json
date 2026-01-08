@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python3:*)",
+      "Bash(.venv/bin/pip:*)",
+      "Bash(.venv/bin/pytest:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(kbc sync init:*)",
+      "Bash(export:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(kbc remote create branch:*)",
+      "Bash(kbc remote list branches:*)",
+      "Bash(cat:*)",
+      "Bash(git checkout:*)",
+      "Bash(kbc local --help:*)",
+      "Bash(kbc local persist:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python:*)",
+      "Bash(kbc sync diff:*)",
+      "Bash(KBC_BRANCH_ID=22750 kbc sync diff:*)"
+    ]
+  }
+}
