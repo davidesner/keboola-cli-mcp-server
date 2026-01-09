@@ -11,6 +11,47 @@ This server ensures agents cannot accidentally use the wrong Keboola branch by e
 - **Single source of truth**: `branch-mapping.json` is the authoritative mapping file
 - **Project validation**: Ensures the Keboola project is properly initialized with `--allow-target-env`
 
+## Server Modes
+
+The server supports two modes:
+
+### CLI Mode (Default)
+
+Provides local CLI tools for running `kbc` commands with automatic branch context:
+- Branch management (link_branch, unlink_branch, etc.)
+- CLI proxy for kbc commands (sync push, sync pull, etc.)
+- Documentation search
+
+### Proxy Mode
+
+Proxies to the remote Keboola MCP server with automatic `X-Branch-Id` header injection:
+- **All remote Keboola MCP tools** (SQL workspace, table operations, jobs, etc.)
+- **Plus local CLI tools** (branch management, kbc commands)
+- **Dynamic branch resolution per-request** - switching git branches immediately takes effect
+
+Enable with: `KBC_MCP_PROXY_MODE=true`
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Proxy Mode Flow                              │
+│                                                                      │
+│  1. Claude calls any tool (e.g., "sql_query")                       │
+│                    │                                                 │
+│                    ▼                                                 │
+│  2. client_factory() called  ◄── PER REQUEST                        │
+│       ├── git branch --show-current → "feature/billing"             │
+│       ├── branch-mapping.json → "22750"                             │
+│       └── Headers: X-StorageAPI-Token, X-Branch-Id: 22750           │
+│                    │                                                 │
+│                    ▼                                                 │
+│  3. Request forwarded to remote Keboola MCP server                  │
+│     https://mcp-agent.{stack}.keboola.com/mcp                       │
+│                    │                                                 │
+│                    ▼                                                 │
+│  4. Response returned to Claude                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ## Prerequisites
 
 1. **Keboola CLI (`kbc`)** must be installed and available in your PATH
@@ -43,10 +84,16 @@ Create a `.env.local` file in your Keboola project directory:
 # Required - Keboola Storage API token
 KBC_STORAGE_API_TOKEN=<your-storage-api-token>
 
+# Required for CLI mode - Storage API URL (used to derive MCP server URL in proxy mode)
+KBC_STORAGE_API_URL=https://connection.<region>.keboola.com
+
 # Optional - defaults shown
 GIT_DEFAULT_BRANCH=main          # Default branch name (maps to production)
 KBC_WORKING_DIR=.                # Working directory for CLI operations
 KBC_MAPPING_FILE=branch-mapping.json  # Path to mapping file
+
+# Proxy mode - enable to get remote Keboola MCP tools with branch injection
+KBC_MCP_PROXY_MODE=false         # Set to "true" to enable proxy mode
 ```
 
 ### MCP Client Setup
@@ -103,28 +150,38 @@ Add to your project's `.mcp.json`:
       "command": "python",
       "args": ["-m", "keboola_cli_mcp_server"],
       "env": {
-        "KBC_STORAGE_API_TOKEN": "your-token-here"
+        "KBC_STORAGE_API_TOKEN": "your-token-here",
+        "KBC_STORAGE_API_URL": "https://connection.keboola.com"
       }
     }
   }
 }
 ```
 
-Or add globally to `~/.claude/claude_code_config.json`:
+#### Proxy Mode Configuration
+
+To enable proxy mode (recommended for full Keboola MCP functionality):
 
 ```json
 {
   "mcpServers": {
-    "keboola-cli": {
+    "keboola-unified": {
       "command": "python",
       "args": ["-m", "keboola_cli_mcp_server"],
       "env": {
-        "KBC_STORAGE_API_TOKEN": "your-token-here"
+        "KBC_STORAGE_API_TOKEN": "your-token-here",
+        "KBC_STORAGE_API_URL": "https://connection.keboola.com",
+        "KBC_MCP_PROXY_MODE": "true"
       }
     }
   }
 }
 ```
+
+This gives you access to:
+- All remote Keboola MCP tools (SQL workspace, table operations, etc.)
+- Local CLI tools (branch management, kbc commands)
+- Automatic branch resolution per-request
 
 ## Available Tools
 

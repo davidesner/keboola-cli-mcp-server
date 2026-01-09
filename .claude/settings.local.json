@@ -24,7 +24,14 @@
       "Bash(python -m pytest:*)",
       "Bash(python:*)",
       "Bash(kbc sync diff:*)",
-      "Bash(KBC_BRANCH_ID=22750 kbc sync diff:*)"
+      "Bash(KBC_BRANCH_ID=22750 kbc sync diff:*)",
+      "Bash(/Users/esner/Documents/Prace/KBC/CLI_DEVOPS/keboola-cli-mcp-server/.venv/bin/python:*)",
+      "Bash(echo:*)",
+      "Bash(ls:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "keboola-cli"
+  ]
 }
