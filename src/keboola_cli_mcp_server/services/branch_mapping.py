@@ -67,7 +67,7 @@ async def create_keboola_branch(
     """
     Create a new Keboola development branch using the CLI.
 
-    Uses: kbc remote create branch -n <name>
+    Uses: kbc remote create branch -n <name> --output-json <file>
 
     Args:
         branch_name: Name for the new Keboola branch
@@ -77,45 +77,52 @@ async def create_keboola_branch(
     Returns:
         {"id": "972851", "name": "branch_name", ...}
     """
+    import uuid
+
+    # kbc --output-json uses paths relative to working_dir, so create output file there
+    cwd = working_dir or Path.cwd()
+    output_filename = f".branch-create-{uuid.uuid4().hex[:8]}.json"
+    output_file = cwd / output_filename
+
     try:
-        cmd = ["kbc", "remote", "create", "branch", "-n", branch_name]
+        cmd = ["kbc", "remote", "create", "branch", "-n", branch_name, "--output-json", output_filename]
 
         result = subprocess.run(
             cmd,
-            cwd=working_dir,
+            cwd=cwd,
             capture_output=True,
             text=True
         )
 
-        # Check if the branch was actually created by looking at the manifest
-        # The CLI may return non-zero exit code due to validation warnings
-        # but still create the branch successfully
-        # Note: kbc transforms "/" to "-" in branch paths
-        manifest_file = (working_dir or Path.cwd()) / ".keboola" / "manifest.json"
-        if manifest_file.exists():
-            manifest = json.loads(manifest_file.read_text())
-            # Try exact match and transformed name (/ -> -)
-            search_names = [branch_name, branch_name.replace("/", "-")]
-            for branch in manifest.get("branches", []):
-                if branch.get("path") in search_names:
+        # Check if output file was created with branch info
+        if output_file.exists():
+            try:
+                output_data = json.loads(output_file.read_text())
+                # The output contains "newBranchId" key
+                branch_id = output_data.get("newBranchId") or output_data.get("id")
+                if branch_id:
                     return {
-                        "id": str(branch.get("id")),
+                        "id": str(branch_id),
                         "name": branch_name,
-                        "path": branch.get("path")
+                        "path": branch_name
                     }
+            except json.JSONDecodeError:
+                pass  # Fall through to error handling
 
-        # If we didn't find the branch in the manifest and there was an error
+        # If we didn't get the branch ID from output file, check the error
         if result.returncode != 0:
             raise BranchCreationError(
                 f"Failed to create Keboola branch: {result.stderr or result.stdout}"
             )
 
         raise BranchCreationError(
-            f"Branch created but could not find it in manifest: {result.stdout}"
+            f"Branch may have been created but could not capture ID. Output: {result.stdout}"
         )
 
-    except json.JSONDecodeError as e:
-        raise BranchCreationError(f"Failed to parse manifest: {e}")
+    finally:
+        # Clean up output file
+        if output_file.exists():
+            output_file.unlink()
 
 
 async def find_keboola_branch_by_name(
