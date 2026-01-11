@@ -112,7 +112,7 @@ def register_tools(mcp: FastMCP, settings: Settings) -> None:
         try:
             async with resolver.branch_context() as (env, branch_info):
                 # Build the full command
-                cmd_parts = ["kbc"] + command.split()
+                cmd_parts = ["/Users/esner/Documents/Prace/KBC/AI-TESTING/keboola-as-code/target/keboola-cli_darwin_arm64_v8.0/kbc"] + command.split()
                 cmd_parts.extend(_convert_args_to_cli_flags(args))
 
                 # Execute command

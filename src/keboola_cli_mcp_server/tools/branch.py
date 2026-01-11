@@ -129,6 +129,9 @@ def register_tools(mcp: FastMCP, settings: Settings) -> None:
         Does NOT delete the Keboola development branch - only removes the local mapping.
         Use the Keboola UI or API to delete the branch if needed.
 
+        Note: Cannot unlink default branches (main/master) as they are implicitly
+        mapped to production.
+
         Returns:
             Dictionary with git_branch, unlinked_keboola_branch_id, and message
         """
@@ -136,6 +139,14 @@ def register_tools(mcp: FastMCP, settings: Settings) -> None:
             git_branch = resolver.get_current_git_branch()
         except GitError as e:
             return {"error": "GIT_ERROR", "message": str(e)}
+
+        # Default branches are implicitly mapped to production - cannot unlink
+        if resolver.is_default_branch(git_branch):
+            return {
+                "git_branch": git_branch,
+                "unlinked_keboola_branch_id": None,
+                "message": f"Cannot unlink default branch '{git_branch}' - it is implicitly mapped to production"
+            }
 
         if not resolver.mapping_service.has_mapping(git_branch):
             return {
@@ -148,7 +159,7 @@ def register_tools(mcp: FastMCP, settings: Settings) -> None:
         return {
             "git_branch": git_branch,
             "unlinked_keboola_branch_id": keboola_branch_id,
-            "message": f"Mapping removed. Keboola branch {keboola_branch_id or 'production'} still exists."
+            "message": f"Mapping removed. Keboola branch {keboola_branch_id} still exists."
         }
 
     @mcp.tool()
