@@ -7,6 +7,26 @@ Proxy mode provides:
 - Local CLI tools (branch management, kbc commands)
 - **Automatic branch resolution per-request** - switching git branches immediately takes effect
 
+## Critical
+- Always work in a feature branch (not main/master). The only exception is getting production metadata about jobs, storage, activated flows prior your work in a branch.
+- Never run kbc push in main/master branch
+
+### Using CLI with MCP Tools
+
+- **CLI** represents the Keboola project in a file system - use for local editing, validation, and version control
+- **MCP tools** operate directly on Keboola via API - use for running jobs, managing tables, getting component schemas
+
+- Use CLI for local editing, validation, and version control
+- Use MCP tools for running jobs, getting metadata about storage and tables, and getting component context
+- Do not use MCP to get and search configs - CLI local representation has all you need and it's more efficient. 
+- The automatic branch context ensures both CLI and MCP tools operate on the correct Keboola branch
+- After remote edits via MCP, always run `kbc sync pull` to keep local and remote in sync
+
+#### Branch vs Production Keboola Branches
+- Things like answering what tabled and configs are stale or flows unscheduled require access to production (everything in a branch looks stale)
+  - To get metadata about table usage, recent jobs you need to look in production.
+
+
 ## Available MCP Tools
 
 ### Branch Management
@@ -100,7 +120,28 @@ These are special types of components that are represented differently than othe
 - Custom Python applications that contain credentials in the user_properties parameter cannot be executed locally unless you replace those credentials in plain text. To test such applications use the MCP tool to run the application remotely.
   - The changes can still be done locally and pushed using `kbc sync push`. It is more context efficient to edit the code locally and push, rather than editing remotely.
 
-  
+
+## SQL Transformations
+
+Because you are working in branches, the transformations cannot work with direct RO access using full db identifiers. 
+The branching system in Keboola automatically creates a branched version of each table in a new schema. E.g. if you run a job that writes to table out.c-bucket.table_a, 
+the resulting path will be out.c-BRANCH_ID-bucket.table_a. You can query this table directly using it's FQN but it cannot be used in transformation code, as it would not be valid after the branch is merged to production.
+
+- Listing tables and bucket via MCP tools returns always the correct FQN (i.e. if a branched version of the table exists, it will return the branched version, otherwise the production one).
+- Input mapping in Transformations always need to have the bucket/table id that is production (these are also always properly returned by the MCP).
+    - The platform itself handles automatic defference between production and branched tables when using input/output mapping. This is why in branch you need to use input mappings.
+
+## Handling Schema Changes
+
+- Keboola platform can automatically add new columns to existing tables when running a job.
+- If a column name changes or is removed, the job will fail. The only way to handle this is dropping the table and running the job again.
+  - Before a first write into a table in a branch, you can change the schema because a new branched table will be created. After the first write, the schema is locked and can only be changed by dropping the table.
+- Branched tables can be safely dropped. Never drop production tables.
+
+## Deleting configurations
+- In a branch you can delete a configuration by deleting them from the project representation (related folders) and running kbc push --force
+- This will not delete the configuration from the production branch, but it will be deleted from the branch you are working on. 
+
 
 ## Branch Context
 
