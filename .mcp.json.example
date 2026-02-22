@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "keboola-cli": {
+      "command": "python",
+      "args": ["-m", "keboola_cli_mcp_server"],
+      "env": {
+        "KBC_STORAGE_API_TOKEN": "<your-keboola-storage-api-token>",
+        "KBC_STORAGE_API_HOST": "connection.<region>.keboola.com",
+        "KBC_WORKING_DIR": "/path/to/your/keboola-project",
+        "GIT_DEFAULT_BRANCH": "main",
+        "KBC_MCP_PROXY_MODE": "true"
+      }
+    }
+  }
+}

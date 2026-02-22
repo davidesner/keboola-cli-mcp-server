@@ -21,7 +21,7 @@ def register_tools(mcp: FastMCP, settings: Settings) -> None:
         Search Keboola CLI documentation for commands, flags, environment variables, and workflows.
 
         Use this to find information about kbc commands like sync, push, pull, remote, local,
-        branch management, environment variables (KBC_BRANCH_ID, KBC_STORAGE_TOKEN), and DevOps workflows.
+        branch management, environment variables (KBC_BRANCH_ID, KBC_STORAGE_API_TOKEN), and DevOps workflows.
 
         Args:
             query: Search query (e.g., 'how to push changes', 'branch environment variables', 'sync init flags')

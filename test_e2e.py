@@ -27,8 +27,8 @@ async def main():
     print("=" * 60)
 
     settings = Settings(
-        storage_token=os.environ.get("KBC_STORAGE_TOKEN", ""),
-        storage_api_url=os.environ.get("KBC_STORAGE_API_URL", ""),
+        storage_token=os.environ.get("KBC_STORAGE_API_TOKEN", ""),
+        storage_api_host=os.environ.get("KBC_STORAGE_API_HOST", ""),
         working_dir=TEST_PROJECT_DIR,
         mapping_file=MAPPING_FILE,
         git_default_branch="main",

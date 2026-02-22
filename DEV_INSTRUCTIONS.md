@@ -97,8 +97,8 @@ The server requires these environment variables:
 
 ```bash
 # Required
-KBC_STORAGE_TOKEN=<your-storage-api-token>
-KBC_STORAGE_API_URL=https://connection.<region>.keboola.com
+KBC_STORAGE_API_TOKEN=<your-storage-api-token>
+KBC_STORAGE_API_HOST=connection.<region>.keboola.com
 GIT_DEFAULT_BRANCH=main  # or master, depending on your repo. This is needed because main/master maps to production branch, which in turn has no mapping. 
 # So no branch mapping is allowed only for default branch. In such case there is no KBC_BRANCH_ID ovrerride.
 ```
@@ -287,7 +287,7 @@ async def search_cli_docs(query: str) -> dict:
     Search Keboola CLI documentation for commands, flags, environment variables, and workflows.
     
     Use this to find information about kbc commands like sync, push, pull, remote, local,
-    branch management, environment variables (KBC_BRANCH_ID, KBC_STORAGE_TOKEN), and DevOps workflows.
+    branch management, environment variables (KBC_BRANCH_ID, KBC_STORAGE_API_TOKEN), and DevOps workflows.
     
     Args:
         query: Search query (e.g., 'how to push changes', 'branch environment variables', 'sync init flags')

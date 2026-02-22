@@ -84,8 +84,8 @@ Create a `.env.local` file in your Keboola project directory:
 # Required - Keboola Storage API token
 KBC_STORAGE_API_TOKEN=<your-storage-api-token>
 
-# Required for CLI mode - Storage API URL (used to derive MCP server URL in proxy mode)
-KBC_STORAGE_API_URL=https://connection.<region>.keboola.com
+# Required - Storage API host (without protocol, used to derive MCP server URL in proxy mode)
+KBC_STORAGE_API_HOST=connection.<region>.keboola.com
 
 # Optional - defaults shown
 GIT_DEFAULT_BRANCH=main          # Default branch name (maps to production)
@@ -151,7 +151,7 @@ Add to your project's `.mcp.json`:
       "args": ["-m", "keboola_cli_mcp_server"],
       "env": {
         "KBC_STORAGE_API_TOKEN": "your-token-here",
-        "KBC_STORAGE_API_URL": "https://connection.keboola.com"
+        "KBC_STORAGE_API_HOST": "connection.keboola.com"
       }
     }
   }
@@ -170,7 +170,7 @@ To enable proxy mode (recommended for full Keboola MCP functionality):
       "args": ["-m", "keboola_cli_mcp_server"],
       "env": {
         "KBC_STORAGE_API_TOKEN": "your-token-here",
-        "KBC_STORAGE_API_URL": "https://connection.keboola.com",
+        "KBC_STORAGE_API_HOST": "connection.keboola.com",
         "KBC_MCP_PROXY_MODE": "true"
       }
     }
